@@ -1,4 +1,5 @@
 const express = require('express');
+const crypto = require('crypto');
 const bodyParser = require('body-parser');
 const fs = require('fs');
 
@@ -17,7 +18,6 @@ app.get('/talker', (_req, res) => {
 app.get('/talker/:id', (req, res) => {
   const { id } = req.params;
   const talker = JSON.parse(fs.readFileSync('talker.json'));
-  console.log(talker);
   const filteredTalker = talker.find((t) => t.id === +id);
   if (filteredTalker) return res.status(HTTP_OK_STATUS).json(filteredTalker);
   if (!filteredTalker) {
@@ -25,6 +25,24 @@ app.get('/talker/:id', (req, res) => {
     { message: 'Pessoa palestrante não encontrada' },
     ); 
 }
+});
+
+app.post('/login', (req, res) => {
+  const { email, password } = req.body;
+  const emailValidation = /\S+@\S+\.\S+/;
+  if (!email) {
+    return res.status(400).json({ message: 'O campo "email" é obrigatório' });
+  }
+  if (!password) {
+    return res.status(400).json({ message: 'O campo "password" é obrigatório' });
+  }
+  if (password.length <= 6) {
+    return res.status(400).json({ message: 'O "password" deve ter pelo menos 6 caracteres' });
+  }
+  if (emailValidation.test(email) === false) {
+    return res.status(400).json({ message: 'O "email" deve ter o formato "email@email.com"' });
+}
+  return res.status(HTTP_OK_STATUS).json({ token: crypto.randomBytes(8).toString('hex') });
 });
 
 // não remova esse endpoint, e para o avaliador funcionar
