@@ -10,10 +10,8 @@ const PORT = '3000';
 
 app.get('/talker', (_req, res) => {
   const talker = JSON.parse(fs.readFileSync('talker.json'));
-  if (!talker.length) {
-    res.status(HTTP_OK_STATUS).json([]);
-  }
-  res.status(HTTP_OK_STATUS).json(talker);
+  if (!talker.length) return res.status(HTTP_OK_STATUS).json([]);
+  return res.status(HTTP_OK_STATUS).json(talker);
 });
 
 // não remova esse endpoint, e para o avaliador funcionar
