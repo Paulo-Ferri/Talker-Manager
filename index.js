@@ -20,6 +20,17 @@ app.get('/talker', (_req, res) => {
   return res.status(HTTP_OK_STATUS).json(talker);
 });
 
+app.get('/talker/search', tokenAuthentication, (req, res) => {
+  const { q: name } = req.query;
+  const talkers = JSON.parse(fs.readFileSync('talker.json'));
+  if (!name || !name.length) {
+    return res.status(200).json(talkers);
+  }
+  const talkerByName = talkers.filter((t) => t.name.includes(name));
+  if (!talkerByName) return res.status(HTTP_OK_STATUS).json([]);
+  return res.status(HTTP_OK_STATUS).json(talkerByName);
+});
+
 app.get('/talker/:id', (req, res) => {
   const { id } = req.params;
   const talker = JSON.parse(fs.readFileSync('talker.json'));
@@ -44,7 +55,7 @@ app.post('/login', (req, res) => {
   if (password.length <= 6) {
     return res.status(400).json({ message: 'O "password" deve ter pelo menos 6 caracteres' });
   }
-  if (emailValidation.test(email) === false) {
+  if (!emailValidation.test(email)) {
     return res.status(400).json({ message: 'O "email" deve ter o formato "email@email.com"' });
 }
   return res.status(HTTP_OK_STATUS).json({ token: crypto.randomBytes(8).toString('hex') });
