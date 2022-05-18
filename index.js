@@ -22,7 +22,7 @@ app.get('/talker', (_req, res) => {
 
 app.get('/talker/search', tokenAuthentication, (req, res) => {
   const { q: name } = req.query;
-  const talkers = JSON.parse(fs.readFileSync('talker.json'));
+  const talkers = JSON.parse(fs.readFileSync(talkerFile));
   if (!name || !name.length) {
     return res.status(200).json(talkers);
   }
@@ -59,6 +59,15 @@ ageAuthentication, talkAuthentication, dateAuthentication, (req, res) => {
   ];
   fs.writeFileSync('./talker.json', JSON.stringify(allTalkers));
   return res.status(HTTP_OK_STATUS).json(talkerChanged);
+});
+
+app.delete('/talker/:id', tokenAuthentication, (req, res) => {
+  const { id } = req.params;
+  const talkers = JSON.parse(fs.readFileSync('talker.json'));
+  const talkerById = talkers.find((t) => t.id === +id);
+  talkers.splice(talkers.indexOf(talkerById));
+  fs.writeFileSync('./talker.json', JSON.stringify(talkers));
+  return res.status(204).end();
 });
 
 app.post('/login', (req, res) => {
