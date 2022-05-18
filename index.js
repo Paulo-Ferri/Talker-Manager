@@ -92,7 +92,7 @@ app.post('/talker', tokenAuthentication, nameAuthentication,
 ageAuthentication, talkAuthentication, dateAuthentication, (req, res) => {
   const { name, age, talk: { watchedAt, rate } } = req.body;
   const talkers = JSON.parse(fs.readFileSync(talkerFile));
-  const lastId = talkers.at(-1).id;
+  const lastId = talkers[talkers.length - 1].id;
   const newTalker = {
     name,
     age,
