@@ -2,15 +2,20 @@ const express = require('express');
 const crypto = require('crypto');
 const bodyParser = require('body-parser');
 const fs = require('fs');
+const nameAuthentication = require('./middlewares/nameAuthentication');
+const tokenAuthentication = require('./middlewares/tokenAuthentication');
+const ageAuthentication = require('./middlewares/ageAuthentication');
+const { dateAuthentication, talkAuthentication } = require('./middlewares/dateAuthentication');
 
 const app = express();
 app.use(bodyParser.json());
 
 const HTTP_OK_STATUS = 200;
 const PORT = '3000';
+const talkerFile = 'talker.json';
 
 app.get('/talker', (_req, res) => {
-  const talker = JSON.parse(fs.readFileSync('talker.json'));
+  const talker = JSON.parse(fs.readFileSync(talkerFile));
   if (!talker.length) return res.status(HTTP_OK_STATUS).json([]);
   return res.status(HTTP_OK_STATUS).json(talker);
 });
@@ -43,6 +48,25 @@ app.post('/login', (req, res) => {
     return res.status(400).json({ message: 'O "email" deve ter o formato "email@email.com"' });
 }
   return res.status(HTTP_OK_STATUS).json({ token: crypto.randomBytes(8).toString('hex') });
+});
+
+app.post('/talker', tokenAuthentication, nameAuthentication,
+ageAuthentication, talkAuthentication, dateAuthentication, (req, res) => {
+  const { name, age, talk: { watchedAt, rate } } = req.body;
+  const talkers = JSON.parse(fs.readFileSync(talkerFile));
+  const lastId = talkers.at(-1).id;
+  const newTalker = {
+    name,
+    age,
+    id: lastId + 1,
+    talk: { watchedAt, rate },
+  };
+  const allTalkers = [
+    ...talkers,
+    newTalker,
+  ];
+  fs.writeFileSync('./talker.json', JSON.stringify(allTalkers));
+  return res.status(201).json(newTalker);
 });
 
 // não remova esse endpoint, e para o avaliador funcionar
