@@ -43,6 +43,24 @@ app.get('/talker/:id', (req, res) => {
 }
 });
 
+app.put('/talker/:id', tokenAuthentication, nameAuthentication,
+ageAuthentication, talkAuthentication, dateAuthentication, (req, res) => {
+  const { id } = req.params;
+  const { name, age, talk } = req.body;
+  const talkers = JSON.parse(fs.readFileSync('talker.json'));
+  const talkerById = talkers.find((t) => t.id === +id);
+  talkers.splice(talkers.indexOf(talkerById));
+  const talkerChanged = {
+    id: +id, name, age, talk,
+  };
+  const allTalkers = [
+    ...talkers,
+    talkerChanged,
+  ];
+  fs.writeFileSync('./talker.json', JSON.stringify(allTalkers));
+  return res.status(HTTP_OK_STATUS).json(talkerChanged);
+});
+
 app.post('/login', (req, res) => {
   const { email, password } = req.body;
   const emailValidation = /\S+@\S+\.\S+/;
